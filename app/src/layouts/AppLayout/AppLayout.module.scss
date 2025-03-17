@@ -1,0 +1,5 @@
+@use '@/styles/mixins' as *;
+
+.appLayout {
+  background-color: var(--bg-color);
+}

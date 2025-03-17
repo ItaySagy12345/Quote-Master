@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    networks:
+      - quote-master-net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_CONFIG_SERVER_MODE}
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED}
+    ports:
+      - "8080:80"
+    networks:
+      - quote-master-net
+    volumes:
+      - ./pgpass:/pgpass
+      - ./servers.json:/pgadmin4/servers.json
+
+  # server:
+  #   image: server
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: server-container
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     POSTGRES_URL: ${POSTGRES_URL}
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - quote-master-net
+  #   volumes:
+  #     - .:/app
+  #   command: >
+  #     sh -c "
+  #       echo 'Waiting for Postgres to be ready...';
+  #       until nc -z -v -w30 postgres 5432; do
+  #         echo 'Waiting for Postgres...';
+  #       done;
+
+  #       echo 'Postgres is up, running migrations...';
+  #       alembic upgrade head && 
+  #       echo 'Migrations complete';
+  #       uvicorn src.server:app --host 0.0.0.0 --port 8000
+  #     "
+
+networks:
+  quote-master-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
